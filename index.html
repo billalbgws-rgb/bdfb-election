@@ -22,7 +22,7 @@
                 <input type="email" id="email" placeholder="আপনার ইমেইল দিন" class="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
             </div>
             <div>
-                <label class="block text-sm text-gray-600 mb-1">পাসওয়ার্ড</label>
+                <label class="block text-sm text-gray-600 mb-1">পাসওয়ার্ড (কমপক্ষে ৬ অক্ষরের)</label>
                 <input type="password" id="password" placeholder="পাসওয়ার্ড দিন" class="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
             </div>
             <div class="flex gap-3 pt-2">
@@ -48,7 +48,7 @@
         </div>
     </div>
 
-    <!-- Script Logic combining GitHub, Supabase & Cloudflare Pages -->
+    <!-- Script Logic -->
     <script>
         const SUPABASE_URL = 'https://vebeutffuaxbbfynxflb.supabase.co';
         const SUPABASE_ANON_KEY = 'sb_publishable_qT9hBlGcci5pplQK38gdDg_vUCcWbOw';
@@ -59,22 +59,46 @@
         async function signup() {
             const email = document.getElementById('email').value.trim();
             const password = document.getElementById('password').value.trim();
-            if(!email || !password) return alert('দয়া করে ইমেইল ও পাসওয়ার্ড উভয়ই দিন।');
+            
+            if(!email || !password) {
+                alert('দয়া করে ইমেইল ও পাসওয়ার্ড উভয়ই দিন।');
+                return;
+            }
 
-            const { data, error } = await supabase.auth.signUp({ email, password });
-            if (error) alert('ত্রুটি: ' + error.message);
-            else alert('রেজিস্ট্রেশন সফল হয়েছে! এখন লগইন করুন।');
+            if(password.length < 6) {
+                alert('পাসওয়ার্ড কমপক্ষে ৬ অক্ষরের হতে হবে।');
+                return;
+            }
+
+            const { data, error } = await supabase.auth.signUp({ 
+                email: email, 
+                password: password,
+                options: {
+                    emailRedirectTo: window.location.origin
+                }
+            });
+
+            if (error) {
+                alert('রেজিস্ট্রেশনে সমস্যা হয়েছে: ' + error.message);
+            } else {
+                alert('রেজিস্ট্রেশন সফল হয়েছে! এবার লগইন করুন।');
+            }
         }
 
         // লগইন ফাংশন
         async function login() {
             const email = document.getElementById('email').value.trim();
             const password = document.getElementById('password').value.trim();
-            if(!email || !password) return alert('দয়া করে ইমেইল ও পাসওয়ার্ড দিন।');
+            
+            if(!email || !password) {
+                alert('দয়া করে ইমেইল ও পাসওয়ার্ড দিন।');
+                return;
+            }
 
             const { data, error } = await supabase.auth.signInWithPassword({ email, password });
-            if (error) alert('লগইন ব্যর্থ হয়েছে: ' + error.message);
-            else {
+            if (error) {
+                alert('লগইন ব্যর্থ হয়েছে: ' + error.message);
+            } else {
                 alert('লগইন সফল হয়েছে!');
                 checkUser();
             }
@@ -100,7 +124,7 @@
             }
         }
 
-        // প্রার্থীদের লোড করা (নাম ও মার্কা সহ, কার্ডে ক্লিক করলে ভোট যাবে)
+        // প্রার্থীদের লোড করা
         async function loadCandidates() {
             const { data, error } = await supabase.from('candidates').select('*');
             const container = document.getElementById('candidates-list');
@@ -151,7 +175,7 @@
             }
         }
 
-        // পেজ লোড হবামাত্র ইউজার চেক করা
+        // পেজ লোড হলে চেক করা
         checkUser();
     </script>
 </body>
