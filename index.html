@@ -3,73 +3,77 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BDFB Election Management</title>
-    <!-- Tailwind CSS for styling -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Supabase JS Client -->
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-</head>
-<body class="bg-gray-100 min-h-screen flex flex-col items-center justify-center p-4">
-
-    <div class="max-w-md w-full bg-white rounded-xl shadow-lg p-6">
-        <h1 class="text-2xl font-bold text-center text-blue-600 mb-6">BDFB Election Management</h1>
-
-        <!-- Auth Section (Login / Signup) -->
-        <div id="auth-section" class="space-y-4">
-            <h2 class="text-lg font-semibold text-gray-700 border-b pb-2">লগইন অথবা রেজিস্ট্রেশন</h2>
-            <div>
-                <label class="block text-sm text-gray-600 mb-1">ইমেইল ঠিকানা</label>
-                <input type="email" id="email" placeholder="আপনার ইমেইল দিন" class="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
-            </div>
-            <div>
-                <label class="block text-sm text-gray-600 mb-1">পাসওয়ার্ড (কমপক্ষে ৬ অক্ষরের)</label>
-<!DOCTYPE html>
-<html lang="bn">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BDFB Election Management</title>
+    <title>BDFB Election Management System</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Supabase JS Client -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
-<body class="bg-gray-100 min-h-screen flex flex-col items-center justify-center p-4">
+<body class="bg-gray-50 min-h-screen flex flex-col items-center justify-center p-4">
 
-    <div class="max-w-md w-full bg-white rounded-xl shadow-lg p-6">
-        <h1 class="text-2xl font-bold text-center text-blue-600 mb-6">BDFB Election Management</h1>
+    <div class="max-w-xl w-full bg-white rounded-2xl shadow-xl p-6 md:p-8">
+        
+        <!-- Header -->
+        <div class="text-center mb-6">
+            <h1 class="text-2xl md:text-3xl font-bold text-blue-600">BDFB Election Management</h1>
+            <p class="text-sm text-gray-500 mt-1">নিরাপদ ও নির্ভরযোগ্য অনলাইন ভোটিং সিস্টেম</p>
+        </div>
 
-        <!-- Auth Section -->
+        <!-- 1. Auth Section (লগইন/রেজিস্ট্রেশন) -->
         <div id="auth-section" class="space-y-4">
-            <h2 class="text-lg font-semibold text-gray-700 border-b pb-2">লগইন অথবা রেজিস্ট্রেশন</h2>
-            <div>
-                <label class="block text-sm text-gray-600 mb-1">ইমেইল ঠিকানা</label>
-                <input type="email" id="email" placeholder="আপনার ইমেইল দিন" class="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
-            </div>
-            <div>
-                <label class="block text-sm text-gray-600 mb-1">পাসওয়ার্ড (কমপক্ষে ৬ অক্ষরের)</label>
-                <input type="password" id="password" placeholder="পাসওয়ার্ড দিন" class="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
-            </div>
-            <div class="flex gap-3 pt-2">
-                <button id="login-btn" type="button" class="flex-1 bg-blue-600 text-white p-3 rounded-lg font-medium hover:bg-blue-700 transition">লগইন</button>
-                <button id="signup-btn" type="button" class="flex-1 bg-green-600 text-white p-3 rounded-lg font-medium hover:bg-green-700 transition">রেজিস্ট্রেশন</button>
+            <div class="bg-blue-50 p-4 rounded-xl border border-blue-100">
+                <h2 class="text-lg font-semibold text-blue-900 mb-3">🔐 ভোটার লগইন / ভেরিফিকেশন</h2>
+                <div class="space-y-3">
+                    <input type="email" id="email" placeholder="আপনার ইমেইল দিন" class="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white">
+                    <input type="password" id="password" placeholder="পাসওয়ার্ড (কমপক্ষে ৬ অক্ষর)" class="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white">
+                    <div class="flex gap-3 pt-1">
+                        <button id="login-btn" class="flex-1 bg-blue-600 text-white p-3 rounded-lg font-medium hover:bg-blue-700 transition">লগইন</button>
+                        <button id="signup-btn" class="flex-1 bg-green-600 text-white p-3 rounded-lg font-medium hover:bg-green-700 transition">রেজিস্ট্রেশন</button>
+                    </div>
+                </div>
             </div>
         </div>
 
-        <!-- Voting Section (Hidden by default) -->
-        <div id="voting-section" class="hidden space-y-4">
-            <div class="bg-blue-50 p-3 rounded-lg flex justify-between items-center">
-                <span id="user-email" class="text-sm text-blue-800 font-medium truncate"></span>
-                <button id="logout-btn" type="button" class="bg-red-500 text-white text-xs px-3 py-1.5 rounded-lg hover:bg-red-600 transition">লগআউট</button>
+        <!-- 2. Voting & Dashboard Section (হোম পেজ ও ভোট প্রদান) -->
+        <div id="voting-section" class="hidden space-y-6">
+            <div class="bg-gray-100 p-4 rounded-xl flex justify-between items-center">
+                <div>
+                    <span class="text-xs text-gray-500 block">লগইনকৃত ভোটার:</span>
+                    <span id="user-email" class="text-sm font-bold text-gray-800"></span>
+                </div>
+                <button id="logout-btn" class="bg-red-500 text-white text-xs px-3 py-2 rounded-lg hover:bg-red-600 transition">লগআউট</button>
             </div>
 
+            <!-- প্রার্থীর তালিকা -->
             <div>
-                <h3 class="text-md font-bold text-gray-800 mb-2">প্রার্থীদের তালিকা:</h3>
-                <p class="text-xs text-gray-500 mb-3">পছন্দের প্রার্থীর কার্ডে ক্লিক করে আপনার মূল্যবান ভোট প্রদান করুন।</p>
-                <div id="candidates-list" class="space-y-3">
-                    <!-- প্রার্থীরা এখানে লোড হবে -->
+                <h3 class="text-md font-bold text-gray-800 mb-2">👥 প্রার্থীদের তালিকা ও প্রতীক:</h3>
+                <p class="text-xs text-gray-500 mb-3">পছন্দের প্রার্থীর কার্ডে ক্লিক করে আপনার নিরাপদ ভোট প্রদান করুন।</p>
+                <div id="candidates-list" class="space-y-3"></div>
+            </div>
+
+            <!-- ফলাফল ও অডিট সেকশন -->
+            <div class="bg-indigo-50 border border-indigo-100 p-4 rounded-xl">
+                <h3 class="text-md font-bold text-indigo-900 mb-2">📊 লাইভ ফলাফল ও অডিট</h3>
+                <div id="live-results" class="space-y-2 text-sm text-gray-700">
+                    <!-- লাইভ ফলাফল এখানে দেখাবে -->
                 </div>
             </div>
+
+            <!-- 5. Admin Panel (এডমিন মনিটরিং) -->
+            <div id="admin-panel" class="hidden bg-amber-50 border border-amber-200 p-4 rounded-xl space-y-3">
+                <h3 class="text-md font-bold text-amber-900">⚙️ Admin Panel (সিস্টেম মনিটরিং)</h3>
+                <div class="grid grid-cols-2 gap-3 text-center">
+                    <div class="bg-white p-3 rounded-lg shadow-sm border">
+                        <span class="text-xs text-gray-500 block">মোট ভোটার রেজিস্টার্ড</span>
+                        <span id="total-users" class="text-lg font-bold text-blue-600">0</span>
+                    </div>
+                    <div class="bg-white p-3 rounded-lg shadow-sm border">
+                        <span class="text-xs text-gray-500 block">মোট কাস্ট ভোট</span>
+                        <span id="total-votes" class="text-lg font-bold text-green-600">0</span>
+                    </div>
+                </div>
+            </div>
+
         </div>
     </div>
 
@@ -89,35 +93,33 @@
         const votingSection = document.getElementById('voting-section');
         const userEmailSpan = document.getElementById('user-email');
         const candidatesContainer = document.getElementById('candidates-list');
+        const liveResultsContainer = document.getElementById('live-results');
+        const adminPanel = document.getElementById('admin-panel');
+        const totalUsersSpan = document.getElementById('total-users');
+        const totalVotesSpan = document.getElementById('total-votes');
 
         // রেজিস্ট্রেশন
         signupBtn.addEventListener('click', async () => {
             const email = emailInput.value.trim();
             const password = passwordInput.value.trim();
-
-            if (!email || !password) return alert('দয়া করে ইমেইল ও পাসওয়ার্ড উভয়ই দিন।');
+            if (!email || !password) return alert('দয়া করে ইমেইল ও পাসওয়ার্ড দিন।');
             if (password.length < 6) return alert('পাসওয়ার্ড কমপক্ষে ৬ অক্ষরের হতে হবে।');
 
-            const { data, error } = await supabase.auth.signUp({ email, password });
-            if (error) {
-                alert('রেজিস্ট্রেশনে সমস্যা: ' + error.message);
-            } else {
-                alert('রেজিস্ট্রেশন সফল হয়েছে! এখন লগইন করুন।');
-            }
+            const { error } = await supabase.auth.signUp({ email, password });
+            if (error) alert('রেজিস্ট্রেশন ত্রুটি: ' + error.message);
+            else alert('রেজিস্ট্রেশন সফল হয়েছে! এবার লগইন করুন।');
         });
 
         // লগইন
         loginBtn.addEventListener('click', async () => {
             const email = emailInput.value.trim();
             const password = passwordInput.value.trim();
-
             if (!email || !password) return alert('দয়া করে ইমেইল ও পাসওয়ার্ড দিন।');
 
-            const { data, error } = await supabase.auth.signInWithPassword({ email, password });
-            if (error) {
-                alert('লগইন ব্যর্থ হয়েছে: ' + error.message);
-            } else {
-                alert('লগইন সফল হয়েছে!');
+            const { error } = await supabase.auth.signInWithPassword({ email, password });
+            if (error) alert('লগইন ব্যর্থ: ' + error.message);
+            else {
+                alert('লগইন সফল!');
                 checkUser();
             }
         });
@@ -128,49 +130,56 @@
             checkUser();
         });
 
-        // ইউজার স্ট্যাটাস চেক
+        // ইউজার ও এডমিন স্ট্যাটাস চেক
         async function checkUser() {
             const { data: { session } } = await supabase.auth.getSession();
             if (session && session.user) {
                 authSection.classList.add('hidden');
                 votingSection.classList.remove('hidden');
                 userEmailSpan.innerText = session.user.email;
+                
                 loadCandidates();
+                loadResults();
+
+                // চেক করা ইউজার এডমিন কি না
+                const { data: profile } = await supabase
+                    .from('profiles')
+                    .select('is_admin')
+                    .eq('id', session.user.id)
+                    .single();
+
+                if (profile && profile.is_admin) {
+                    adminPanel.classList.remove('hidden');
+                    loadAdminStats();
+                } else {
+                    adminPanel.classList.add('hidden');
+                }
             } else {
                 authSection.classList.remove('hidden');
                 votingSection.classList.add('hidden');
             }
         }
 
-        // প্রার্থীদের লোড করা
+        // প্রার্থীদের লোড ও ভোট প্রদান
         async function loadCandidates() {
-            const { data, error } = await supabase.from('candidates').select('*');
+            const { data: candidates } = await supabase.from('candidates').select('*');
             candidatesContainer.innerHTML = '';
             
-            if (error) {
-                candidatesContainer.innerHTML = '<p class="text-red-500 text-sm">প্রার্থীদের তালিকা লোড করা যায়নি।</p>';
-                return;
-            }
+            if (!candidates) return;
 
-            if (!data || data.length === 0) {
-                candidatesContainer.innerHTML = '<p class="text-gray-500 text-sm">কোনো প্রার্থী পাওয়া যায়নি।</p>';
-                return;
-            }
-
-            data.forEach(candidate => {
+            candidates.forEach(candidate => {
                 const card = document.createElement('div');
-                card.className = "p-4 border-2 border-gray-200 rounded-xl bg-white shadow-sm hover:border-blue-500 hover:bg-blue-50/50 cursor-pointer transition flex items-center justify-between";
+                card.className = "p-4 border-2 border-gray-200 rounded-xl bg-white shadow-sm hover:border-blue-500 hover:bg-blue-50/40 cursor-pointer transition flex items-center justify-between";
                 card.innerHTML = `
                     <div>
                         <h4 class="font-bold text-gray-800 text-base">${candidate.name}</h4>
-                        <p class="text-sm text-gray-500 mt-0.5">মার্কা: <span class="font-semibold text-blue-600">${candidate.symbol}</span></p>
+                        <p class="text-sm text-gray-500 mt-0.5">মার্কা/প্রতীক: <span class="font-semibold text-blue-600">${candidate.symbol}</span></p>
                     </div>
                     <span class="text-xs bg-blue-100 text-blue-700 px-3 py-1.5 rounded-full font-semibold">ভোট দিন</span>
                 `;
 
-                // ভোট দেওয়ার ইভেন্ট
                 card.addEventListener('click', async () => {
-                    if (!confirm(`আপনি কি নিশ্চিতভাবে "${candidate.name}"-কে ভোট দিতে চান?`)) return;
+                    if (!confirm(`আপনি কি "${candidate.name}"-কে ভোট দিতে চান?`)) return;
 
                     const { data: { session } } = await supabase.auth.getSession();
                     if (!session) return alert('আগে লগইন করুন!');
@@ -180,18 +189,47 @@
                     ]);
 
                     if (voteError) {
-                        if (voteError.code === '23505') {
-                            alert('দুঃখিত! আপনি ইতিমধ্যে একবার ভোট দিয়েছেন।');
-                        } else {
-                            alert('ভোট দিতে সমস্যা হয়েছে: ' + voteError.message);
-                        }
+                        if (voteError.code === '23505') alert('দুঃখিত! আপনি ইতিমধ্যে একবার ভোট দিয়েছেন।');
+                        else alert('ভোট দিতে সমস্যা: ' + voteError.message);
                     } else {
-                        alert(`অভিনন্দন! "${candidate.name}"-কে আপনার ভোট সফলভাবে জমা হয়েছে।`);
+                        alert('আপনার ভোট সফলভাবে জমা হয়েছে!');
+                        loadResults();
+                        if(!adminPanel.classList.contains('hidden')) loadAdminStats();
                     }
                 });
 
                 candidatesContainer.appendChild(card);
             });
+        }
+
+        // লাইভ ফলাফল ও অডিট
+        async function loadResults() {
+            const { data: candidates } = await supabase.from('candidates').select('*');
+            const { data: votes } = await supabase.from('votes').select('*');
+            
+            liveResultsContainer.innerHTML = '';
+            if (!candidates) return;
+
+            const totalVotes = votes ? votes.length : totalVotesSpan;
+
+            candidates.forEach(candidate => {
+                const candidateVotes = votes ? votes.filter(v => v.candidate_id === candidate.id).length : 0;
+                liveResultsContainer.innerHTML += `
+                    <div class="flex justify-between items-center bg-white p-2.5 rounded-lg border shadow-xs">
+                        <span class="font-medium text-gray-800">${candidate.name} (${candidate.symbol})</span>
+                        <span class="font-bold text-blue-600 bg-blue-50 px-2.5 py-1 rounded-md text-xs">${candidateVotes} ভোট</span>
+                    </div>
+                `;
+            });
+        }
+
+        // এডমিন স্ট্যাটাস মনিটরিং
+        async function loadAdminStats() {
+            const { count: usersCount } = await supabase.from('profiles').select('*', { count: 'exact', head: true });
+            const { count: votesCount } = await supabase.from('votes').select('*', { count: 'exact', head: true });
+
+            totalUsersSpan.innerText = usersCount || 0;
+            totalVotesSpan.innerText = votesCount || 0;
         }
 
         checkUser();
