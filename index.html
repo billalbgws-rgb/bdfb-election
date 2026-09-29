@@ -15,19 +15,19 @@
         <!-- Auth Box -->
         <div id="auth-box" class="space-y-4">
             <h2 class="text-lg font-semibold text-gray-700">লগইন বা রেজিস্ট্রেশন</h2>
-            <input type="email" id="email" placeholder="ইমেইল দিন" class="w-full p-3 border rounded-lg">
-            <input type="password" id="password" placeholder="পাসওয়ার্ড (কমপক্ষে ৬ অক্ষর)" class="w-full p-3 border rounded-lg">
+            <input type="email" id="email" placeholder="ইমেইল দিন" class="w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500">
+            <input type="password" id="password" placeholder="পাসওয়ার্ড (কমপক্ষে ৬ অক্ষর)" class="w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500">
             <div class="flex gap-2">
-                <button onclick="handleLogin()" class="flex-1 bg-blue-600 text-white p-3 rounded-lg font-medium">লগইন</button>
-                <button onclick="handleSignup()" class="flex-1 bg-green-600 text-white p-3 rounded-lg font-medium">রেজিস্ট্রেশন</button>
+                <button onclick="handleLogin()" class="flex-1 bg-blue-600 text-white p-3 rounded-lg font-medium hover:bg-blue-700">লগইন</button>
+                <button onclick="handleSignup()" class="flex-1 bg-green-600 text-white p-3 rounded-lg font-medium hover:bg-green-700">রেজিস্ট্রেশন</button>
             </div>
         </div>
 
         <!-- Dashboard Box -->
         <div id="dash-box" class="hidden space-y-4">
             <div class="flex justify-between items-center bg-gray-50 p-3 rounded-lg">
-                <span id="user-display" class="text-sm font-semibold text-gray-700"></span>
-                <button onclick="handleLogout()" class="bg-red-500 text-white text-xs px-3 py-1.5 rounded">লগআউট</button>
+                <span id="user-display" class="text-sm font-semibold text-gray-700 truncate"></span>
+                <button onclick="handleLogout()" class="bg-red-500 text-white text-xs px-3 py-1.5 rounded hover:bg-red-600">লগআউট</button>
             </div>
             <h3 class="font-bold text-gray-800">প্রার্থীদের তালিকা (ভোট দিতে ক্লিক করুন):</h3>
             <div id="candidates" class="space-y-2"></div>
@@ -92,11 +92,16 @@
             const { data, error } = await supabase.from('candidates').select('*');
             
             if (error) {
-                container.innerHTML = '<p class="text-red-500 text-sm">প্রার্থী লোড করা যায়নি।</p>';
+                container.innerHTML = '<p class="text-red-500 text-sm">প্রার্থী লোড করা যায়নি: ' + error.message + '</p>';
                 return;
             }
 
             container.innerHTML = '';
+            if(!data || data.length === 0) {
+                container.innerHTML = '<p class="text-gray-500 text-sm">কোনো প্রার্থী নেই।</p>';
+                return;
+            }
+
             data.forEach(c => {
                 const div = document.createElement('div');
                 div.className = "p-3 border rounded-lg bg-white shadow-sm hover:bg-blue-50 cursor-pointer flex justify-between items-center";
@@ -107,7 +112,7 @@
                     
                     const { error: voteErr } = await supabase.from('votes').insert([{ user_id: userId, candidate_id: c.id }]);
                     if (voteErr) {
-                        if (voteErr.code === '23505') alert('আপনি ইতিমধ্যে ভোট দিয়েছেন!');
+                        if (voteErr.code === '23505') alert('আপনি ইতিমধ্যে একবার ভোট দিয়েছেন!');
                         else alert('ভোট জমা হয়নি: ' + voteErr.message);
                     } else {
                         alert('আপনার ভোট সফলভাবে জমা হয়েছে!');
