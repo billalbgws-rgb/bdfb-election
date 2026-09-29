@@ -48,17 +48,25 @@
         </div>
     </div>
 
-    <!-- Script Logic -->
+    <!-- Script Logic with Debugging Alerts -->
     <script>
         const SUPABASE_URL = 'https://vebeutffuaxbbfynxflb.supabase.co';
         const SUPABASE_ANON_KEY = 'sb_publishable_qT9hBlGcci5pplQK38gdDg_vUCcWbOw';
 
-        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        let supabase;
+        try {
+            supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        } catch (err) {
+            alert('Supabase কানেক্ট করতে সমস্যা হয়েছে: ' + err.message);
+        }
 
         // সাইন আপ ফাংশন
         async function signup() {
-            const email = document.getElementById('email').value.trim();
-            const password = document.getElementById('password').value.trim();
+            const emailField = document.getElementById('email');
+            const passwordField = document.getElementById('password');
+            
+            const email = emailField ? emailField.value.trim() : '';
+            const password = passwordField ? passwordField.value.trim() : '';
             
             if(!email || !password) {
                 alert('দয়া করে ইমেইল ও পাসওয়ার্ড উভয়ই দিন।');
@@ -70,37 +78,53 @@
                 return;
             }
 
-            const { data, error } = await supabase.auth.signUp({ 
-                email: email, 
-                password: password,
-                options: {
-                    emailRedirectTo: window.location.origin
-                }
-            });
+            alert('রজিস্ট্রেশন প্রসেস শুরু হচ্ছে...');
 
-            if (error) {
-                alert('রেজিস্ট্রেশনে সমস্যা হয়েছে: ' + error.message);
-            } else {
-                alert('রেজিস্ট্রেশন সফল হয়েছে! এবার লগইন করুন।');
+            try {
+                const { data, error } = await supabase.auth.signUp({ 
+                    email: email, 
+                    password: password 
+                });
+
+                if (error) {
+                    alert('সুপাবেস এরর: ' + error.message);
+                } else {
+                    alert('রেজিস্ট্রেশন সফল হয়েছে! এবার লগইন করুন।');
+                }
+            } catch (err)  {
+                alert('কোডে সমস্যা হয়েছে: ' + err.message);
             }
         }
 
         // লগইন ফাংশন
         async function login() {
-            const email = document.getElementById('email').value.trim();
-            const password = document.getElementById('password').value.trim();
+            const emailField = document.getElementById('email');
+            const passwordField = document.getElementById('password');
+            
+            const email = emailField ? emailField.value.trim() : '';
+            const password = passwordField ? passwordField.value.trim() : '';
             
             if(!email || !password) {
                 alert('দয়া করে ইমেইল ও পাসওয়ার্ড দিন।');
                 return;
             }
 
-            const { data, error } = await supabase.auth.signInWithPassword({ email, password });
-            if (error) {
-                alert('লগইন ব্যর্থ হয়েছে: ' + error.message);
-            } else {
-                alert('লগইন সফল হয়েছে!');
-                checkUser();
+            alert('লগইন প্রসেস শুরু হচ্ছে...');
+
+            try {
+                const { data, error } = await supabase.auth.signInWithPassword({ 
+                    email: email, 
+                    password: password 
+                });
+
+                if (error) {
+                    alert('লগইন ব্যর্থ হয়েছে: ' + error.message);
+                } else {
+                    alert('লগইন সফল হয়েছে!');
+                    checkUser();
+                }
+            } catch (err) {
+                alert('কোডে সমস্যা হয়েছে: ' + err.message);
             }
         }
 
@@ -112,30 +136,40 @@
 
         // ইউজার স্ট্যাটাস চেক করা
         async function checkUser() {
-            const { data: { session } } = await supabase.auth.getSession();
-            if (session) {
-                document.getElementById('auth-section').classList.add('hidden');
-                document.getElementById('voting-section').classList.remove('hidden');
-                document.getElementById('user-email').innerText = `${session.user.email}`;
-                loadCandidates();
-            } else {
-                document.getElementById('auth-section').classList.remove('hidden');
-                document.getElementById('voting-section').classList.add('hidden');
+            try {
+                const { data: { session } } = await supabase.auth.getSession();
+                const authSection = document.getElementById('auth-section');
+                const votingSection = document.getElementById('voting-section');
+                const userEmail = document.getElementById('user-email');
+
+                if (session && session.user) {
+                    if (authSection) authSection.classList.add('hidden');
+                    if (votingSection) votingSection.classList.remove('hidden');
+                    if (userEmail) userEmail.innerText = session.user.email;
+                    loadCandidates();
+                } else {
+                    if (authSection) authSection.classList.remove('hidden');
+                    if (votingSection) votingSection.classList.add('hidden');
+                }
+            } catch (err) {
+                console.error(err);
             }
         }
 
         // প্রার্থীদের লোড করা
         async function loadCandidates() {
-            const { data, error } = await supabase.from('candidates').select('*');
             const container = document.getElementById('candidates-list');
+            if(!container) return;
+
+            const { data, error } = await supabase.from('candidates').select('*');
             container.innerHTML = '';
             
             if (error) {
-                container.innerHTML = '<p class="text-red-500 text-sm">প্রার্থীদের তালিকা লোড করা যায়নি।</p>';
+                container.innerHTML = '<p class="text-red-500 text-sm">প্রার্থীদের তালিকা লোড করা যায়নি: ' + error.message + '</p>';
                 return;
             }
 
-            if(data.length === 0) {
+            if(!data || data.length === 0) {
                 container.innerHTML = '<p class="text-gray-500 text-sm">কোনো প্রার্থী পাওয়া যায়নি।</p>';
                 return;
             }
@@ -166,7 +200,7 @@
 
             if (error) {
                 if (error.code === '23505') {
-                    alert('দুঃখিত! আপনি ইতিমধ্যে একবার ভোট দিয়েছেন। একজন ভোটার একবারই ভোট দিতে পারবেন।');
+                    alert('দুঃখিত! আপনি ইতিমধ্যে একবার ভোট দিয়েছেন।');
                 } else {
                     alert('ভোট দিতে সমস্যা হয়েছে: ' + error.message);
                 }
