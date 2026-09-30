@@ -3,161 +3,330 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BDFB Election Management</title>
+    <title>BDFB Election Management System</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <!-- SheetJS for PDF/Excel Export if needed -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 </head>
-<body class="bg-gray-100 min-h-screen flex items-center justify-center p-4">
+<body class="bg-gray-50 min-h-screen flex flex-col items-center p-4">
 
-    <div class="max-w-md w-full bg-white rounded-2xl shadow-xl p-6 space-y-6">
+    <div class="max-w-2xl w-full bg-white rounded-2xl shadow-xl p-6 md:p-8 space-y-6 my-auto">
         
-        <div class="text-center">
-            <h1 class="text-2xl font-bold text-blue-600">BDFB Election</h1>
-            <p class="text-xs text-gray-500 mt-1">নিরাপদ অনলাইন ভোটিং সিস্টেম</p>
+        <!-- Header with BDFB Logo/Title -->
+        <div class="text-center border-b pb-4">
+            <div class="inline-block bg-blue-100 text-blue-700 font-bold text-xl px-4 py-2 rounded-full mb-2">BDFB</div>
+            <h1 class="text-2xl font-bold text-gray-800">Blood Donor Force of Bangladesh</h1>
+            <p class="text-xs text-gray-500 mt-1">অফিশিয়াল অনলাইন নির্বাচন ব্যবস্থাপনা সিস্টেম</p>
         </div>
 
-        <!-- Auth Section -->
-        <div id="auth-section" class="space-y-4 bg-blue-50 p-4 rounded-xl border">
-            <h2 class="text-md font-semibold text-blue-900">🔐 লগইন বা রেজিস্ট্রেশন</h2>
-            <input type="email" id="email" placeholder="ইমেইল দিন" class="w-full p-3 border rounded-lg bg-white">
-            <input type="password" id="password" placeholder="পাসওয়ার্ড (কমপক্ষে ৬ অক্ষর)" class="w-full p-3 border rounded-lg bg-white">
+        <!-- Home / Login Section -->
+        <div id="login-section" class="space-y-4">
+            <div class="bg-blue-50 p-4 rounded-xl border border-blue-100 space-y-3">
+                <h2 class="text-md font-bold text-blue-900">🔐 ভোটার লগইন ও তথ্য যাচাই</h2>
+                <p class="text-xs text-gray-600">ভোট দিতে আপনার ভোটার নম্বর এবং ইউনিক কোড/মোবাইল নম্বর প্রদান করুন।</p>
+                
+                <input type="text" id="login-voter-no" placeholder="ভোটার নম্বর (যেমন: 101)" class="w-full p-3 border rounded-lg bg-white text-sm">
+                <input type="password" id="login-code" placeholder="ইউনিক কোড / মোবাইল নম্বর" class="w-full p-3 border rounded-lg bg-white text-sm">
+                
+                <div class="flex gap-2">
+                    <button onclick="handleVoterLogin()" class="flex-1 bg-blue-600 text-white p-3 rounded-lg font-medium text-sm hover:bg-blue-700">লগইন করুন</button>
+                    <button onclick="toggleAdminLogin()" class="bg-gray-600 text-white px-4 py-3 rounded-lg font-medium text-sm hover:bg-gray-700">এডমিন প্যানেল</button>
+                </div>
+            </div>
+
+            <!-- Error Message Box -->
+            <div id="error-box" class="hidden bg-red-50 border border-red-200 p-4 rounded-xl text-xs text-red-700 space-y-1">
+                <p id="error-msg" class="font-bold"></p>
+                <p>অনুগ্রহ করে ভোটার তালিকার সঠিক তথ্যের জন্য যোগাযোগ করুন— <b>হযরত বিল্লাল - 01560062426 (Whatsapp)</b></p>
+            </div>
+
+            <!-- Running Results Preview on Home Page -->
+            <div class="bg-indigo-50 border border-indigo-100 p-4 rounded-xl space-y-2">
+                <h3 class="text-md font-bold text-indigo-900">📊 রানিং নির্বাচনের লাইভ ফলাফল</h3>
+                <div id="home-results" class="space-y-1 text-sm text-gray-700"></div>
+            </div>
+        </div>
+
+        <!-- Admin Login Modal/Section -->
+        <div id="admin-login-section" class="hidden space-y-4 bg-amber-50 p-4 rounded-xl border border-amber-200">
+            <h2 class="text-md font-bold text-amber-900">⚙️ এডমিন সিক্রেট লগইন</h2>
+            <input type="password" id="admin-pass" placeholder="এডমিন পাসওয়ার্ড দিন" class="w-full p-3 border rounded-lg bg-white text-sm">
             <div class="flex gap-2">
-                <button onclick="handleLogin()" class="flex-1 bg-blue-600 text-white p-2.5 rounded-lg font-medium hover:bg-blue-700">লগইন</button>
-                <button onclick="handleSignup()" class="flex-1 bg-green-600 text-white p-2.5 rounded-lg font-medium hover:bg-green-700">রেজিস্ট্রেশন</button>
+                <button onclick="verifyAdmin()" class="bg-amber-600 text-white px-4 py-2 rounded-lg text-sm font-medium">প্রবেশ করুন</button>
+                <button onclick="backToHome()" class="bg-gray-400 text-white px-4 py-2 rounded-lg text-sm font-medium">বাতিল</button>
             </div>
         </div>
 
-        <!-- Dashboard Section -->
-        <div id="dash-section" class="hidden space-y-4">
-            <div class="flex justify-between items-center bg-gray-50 p-3 rounded-xl border">
-                <span id="user-display" class="text-xs font-bold text-gray-700 truncate"></span>
-                <button onclick="handleLogout()" class="bg-red-500 text-white text-xs px-3 py-1.5 rounded hover:bg-red-600">লগআউট</button>
+        <!-- Voting Dashboard -->
+        <div id="voting-section" class="hidden space-y-4">
+            <div class="flex justify-between items-center bg-gray-100 p-3 rounded-xl">
+                <div>
+                    <span class="text-xs text-gray-500 block">ভোটার নাম:</span>
+                    <span id="logged-voter-name" class="text-sm font-bold text-gray-800"></span>
+                </div>
+                <button onclick="logout()" class="bg-red-500 text-white text-xs px-3 py-1.5 rounded-lg">লগআউট</button>
             </div>
 
-            <h3 class="font-bold text-gray-800 text-sm">👥 প্রার্থীদের তালিকা (ভোট দিতে ক্লিক করুন):</h3>
-            <div id="candidates-container" class="space-y-2">
-                <!-- প্রার্থীরা এখানে দেখাবে -->
+            <h3 class="font-bold text-gray-800 text-sm">👥 প্রার্থীদের তালিকা (পছন্দের প্রীতে ভোট দিন):</h3>
+            <div id="voting-candidates-list" class="space-y-2"></div>
+        </div>
+
+        <!-- Admin Dashboard -->
+        <div id="admin-dashboard" class="hidden space-y-6">
+            <div class="flex justify-between items-center bg-amber-100 p-3 rounded-xl">
+                <span class="font-bold text-amber-900 text-sm">⚙️ এডমিন কন্ট্রোল প্যানেল</span>
+                <button onclick="logout()" class="bg-red-500 text-white text-xs px-3 py-1.5 rounded-lg">লগআউট</button>
             </div>
 
-            <!-- Live Results -->
-            <div class="bg-indigo-50 border border-indigo-100 p-3 rounded-xl space-y-2">
-                <h4 class="font-bold text-indigo-900 text-xs">📊 লাইভ ফলাফল</h4>
-                <div id="results-container" class="text-xs space-y-1"></div>
+            <!-- Add Eligible Voter -->
+            <div class="bg-gray-50 p-4 rounded-xl border space-y-3">
+                <h4 class="font-bold text-gray-800 text-xs">নতুন বৈধ ভোটার যুক্ত করুন</h4>
+                <input type="text" id="new-voter-no" placeholder="ভোটার নম্বর" class="w-full p-2 border rounded text-xs bg-white">
+                <input type="text" id="new-voter-code" placeholder="ইউনিক কোড / মোবাইল" class="w-full p-2 border rounded text-xs bg-white">
+                <input type="text" id="new-voter-name" placeholder="ভোটার নাম" class="w-full p-2 border rounded text-xs bg-white">
+                <button onclick="addEligibleVoter()" class="w-full bg-blue-600 text-white py-2 rounded text-xs font-semibold">ভোটার তালিকায় যুক্ত করুন</button>
+            </div>
+
+            <!-- PDF Export Option -->
+            <div class="flex justify-between items-center bg-blue-50 p-3 rounded-xl border">
+                <span class="text-xs font-bold text-blue-900">ভোটার তালিকা প্রকাশ ও পিডিএফ</span>
+                <button onclick="downloadVoterPDF()" class="bg-green-600 text-white px-3 py-1.5 rounded text-xs font-semibold">PDF ডাউনলোড</button>
+            </div>
+
+            <!-- Add Candidate -->
+            <div class="bg-gray-50 p-4 rounded-xl border space-y-3">
+                <h4 class="font-bold text-gray-800 text-xs">প্রার্থী চুড়ান্ত করুন</h4>
+                <input type="text" id="cand-name" placeholder="প্রার্থীর নাম" class="w-full p-2 border rounded text-xs bg-white">
+                <input type="text" id="cand-symbol" placeholder="প্রতীক / মার্কা" class="w-full p-2 border rounded text-xs bg-white">
+                <button onclick="addCandidate()" class="w-full bg-amber-600 text-white py-2 rounded text-xs font-semibold">প্রার্থী তালিকাভুক্ত করুন</button>
+            </div>
+
+            <!-- Admin Live Results -->
+            <div class="bg-indigo-50 p-4 rounded-xl border space-y-2">
+                <h4 class="font-bold text-indigo-900 text-xs">📊 লাইভ ভোট গণনা ও ফলাফল</h4>
+                <div id="admin-results" class="text-xs space-y-1"></div>
             </div>
         </div>
 
     </div>
 
+    <!-- Script Logic -->
     <script>
         const SUPABASE_URL = 'https://vebeutffuaxbbfynxflb.supabase.co';
         const SUPABASE_KEY = 'sb_publishable_qT9hBlGcci5pplQK38gdDg_vUCcWbOw';
         const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-        // ফিক্সড প্রার্থীদের লিস্ট (যাতে ডাটাবেজ ফেইল করলেও লিস্ট শো করে)
-        const defaultCandidates = [
-            { id: 1, name: 'প্রার্থী ১: মো: আব্দুল করিম', symbol: 'শাপলা ফুল' },
-            { id: 2, name: 'প্রার্থী ২: মো: রহমত উল্লাহ', symbol: 'বই' },
-            { id: 3, name: 'প্রার্থী ৩: মো: রফিকুল ইসলাম', symbol: 'দেওয়াল ঘড়ি' }
-        ];
+        let currentVoter = null;
 
-        async function handleSignup() {
-            const email = document.getElementById('email').value.trim();
-            const password = document.getElementById('password').value.trim();
-            if (!email || !password) return alert('ইমেইল ও পাসওয়ার্ড দিন');
+        // Load Home Results on start
+        loadHomeResults();
 
-            const { error } = await supabase.auth.signUp({ email, password });
-            if (error) alert('রেজিস্ট্রেশন ব্যর্থ: ' + error.message);
-            else alert('রেজিস্ট্রেশন সফল! এখন লগইন করুন।');
-        }
-
-        async function handleLogin() {
-            const email = document.getElementById('email').value.trim();
-            const password = document.getElementById('password').value.trim();
-            if (!email || !password) return alert('ইমেইল ও পাসওয়ার্ড দিন');
-
-            const { error } = await supabase.auth.signInWithPassword({ email, password });
-            if (error) {
-                alert('লগইন ব্যর্থ: ' + error.message);
-            } else {
-                alert('লগইন সফল!');
-                checkSession();
-            }
-        }
-
-        async function handleLogout() {
-            await supabase.auth.signOut();
-            checkSession();
-        }
-
-        async function checkSession() {
-            const { data: { session } } = await supabase.auth.getSession();
-            const authSection = document.getElementById('auth-section');
-            const dashSection = document.getElementById('dash-section');
-
-            if (session) {
-                authSection.classList.add('hidden');
-                dashSection.classList.remove('hidden');
-                document.getElementById('user-display').innerText = session.user.email;
-                renderCandidates(session.user.id);
-            } else {
-                authSection.classList.remove('hidden');
-                dashSection.classList.add('hidden');
-            }
-        }
-
-        function renderCandidates(userId) {
-            const container = document.getElementById('candidates-container');
+        async function loadHomeResults() {
+            const { data: candidates } = await supabase.from('candidates').select('*');
+            const { data: votes } = await supabase.from('votes').select('*');
+            const container = document.getElementById('home-results');
             container.innerHTML = '';
 
-            defaultCandidates.forEach(c => {
-                const div = document.createElement('div');
-                div.className = "p-3 border rounded-xl bg-white shadow-sm hover:bg-blue-50 cursor-pointer flex justify-between items-center text-sm";
-                div.innerHTML = `
-                    <div>
-                        <span class="font-bold text-gray-800">${c.name}</span>
-                        <span class="text-xs text-blue-600 block">প্রতীক: ${c.symbol}</span>
-                    </div>
-                    <span class="bg-blue-100 text-blue-700 px-3 py-1 rounded-full text-xs font-semibold">ভোট দিন</span>
-                `;
-
-                div.onclick = async () => {
-                    if (!confirm(`"${c.name}"-কে ভোট দিতে চান?`)) return;
-
-                    const { error } = await supabase.from('votes').insert([
-                        { user_id: userId, candidate_id: c.id }
-                    ]);
-
-                    if (error) {
-                        if (error.code === '23505') alert('আপনি ইতিমধ্যে একবার ভোট দিয়েছেন!');
-                        else alert('ভোট জমা হয়েছে বা সার্ভার রেসপন্স করেছে।');
-                    } else {
-                        alert('আপনার ভোট সফলভাবে জমা হয়েছে!');
-                    }
-                    loadResults();
-                };
-
-                container.appendChild(div);
-            });
-            loadResults();
-        }
-
-        async function loadResults() {
-            const resultsContainer = document.getElementById('results-container');
-            const { data: votes } = await supabase.from('votes').select('*');
-
-            resultsContainer.innerHTML = '';
-            defaultCandidates.forEach(c => {
+            if(!candidates) return;
+            candidates.forEach(c => {
                 const count = votes ? votes.filter(v => v.candidate_id === c.id).length : 0;
-                resultsContainer.innerHTML += `
-                    <div class="flex justify-between bg-white p-2 rounded border">
-                        <span>${c.name}</span>
+                container.innerHTML += `
+                    <div class="flex justify-between bg-white p-2 rounded border text-xs">
+                        <span><b>${c.name}</b> (${c.symbol})</span>
                         <span class="font-bold text-blue-600">${count} ভোট</span>
                     </div>
                 `;
             });
         }
 
-        checkSession();
+        async function handleVoterLogin() {
+            const voterNo = document.getElementById('login-voter-no').value.trim();
+            const code = document.getElementById('login-code').value.trim();
+            const errorBox = document.getElementById('error-box');
+            const errorMsg = document.getElementById('error-msg');
+
+            if(!voterNo || !code) {
+                errorMsg.innerText = "দয়া করে ভোটার নম্বর ও কোড প্রদান করুন।";
+                errorBox.classList.remove('hidden');
+                return;
+            }
+
+            const { data, error } = await supabase
+                .from('eligible_voters')
+                .select('*')
+                .eq('voter_no', voterNo)
+                .eq('unique_code', code)
+                .single();
+
+            if(error || !data) {
+                errorMsg.innerText = "আপনার তথ্য ভুল অনুগ্রহ করে ভোটার তালিকার সঠিক তথ্যের জন্য যোগাযোগ করুন—";
+                errorBox.classList.remove('hidden');
+                return;
+            }
+
+            errorBox.classList.add('hidden');
+            currentVoter = data;
+            
+            document.getElementById('login-section').classList.add('hidden');
+            document.getElementById('logged-voter-name').innerText = `${data.name} (ভোটার নং: ${data.voter_no})`;
+            document.getElementById('voting-section').classList.remove('hidden');
+            loadVotingCandidates();
+        }
+
+        async function loadVotingCandidates() {
+            const { data: candidates } = await supabase.from('candidates').select('*');
+            const container = document.getElementById('voting-candidates-list');
+            container.innerHTML = '';
+
+            candidates.forEach(c => {
+                const div = document.createElement('div');
+                div.className = "p-3 border rounded-xl bg-white shadow-sm flex justify-between items-center text-sm";
+                div.innerHTML = `
+                    <div>
+                        <b class="text-gray-800">${c.name}</b>
+                        <span class="text-xs text-blue-600 block">মার্কা: ${c.symbol}</span>
+                    </div>
+                    <button onclick="castVote(${c.id}, '${c.name}')" class="bg-blue-600 text-white px-3 py-1.5 rounded-lg text-xs font-semibold hover:bg-blue-700">ভোট দিন</button>
+                `;
+                container.appendChild(div);
+            });
+        }
+
+        async function castVote(candidateId, candidateName) {
+            if(!confirm(`আপনি কি "${candidateName}"-কে ভোট দিতে নিশ্চিত?`)) return;
+
+            // Check if already voted
+            const { data: existingVote } = await supabase
+                .from('votes')
+                .select('*')
+                .eq('voter_no', currentVoter.voter_no)
+                .single();
+
+            if(existingVote) {
+                alert('আপনার ভোট দেওয়া হয়ে গেছে! আপনি একাধিক ভোট প্রদান করতে পারবেন না।');
+                return;
+            }
+
+            const { error } = await supabase.from('votes').insert([
+                { voter_no: currentVoter.voter_no, candidate_id: candidateId }
+            ]);
+
+            if(error) {
+                alert('ভোট জমা দিতে সমস্যা হয়েছে: ' + error.message);
+            } else {
+                alert('অভিনন্দন! আপনার ভোট সফলভাবে প্রদান করা হয়েছে।');
+                logout();
+            }
+        }
+
+        function toggleAdminLogin() {
+            document.getElementById('login-section').classList.add('hidden');
+            document.getElementById('admin-login-section').classList.remove('hidden');
+        }
+
+        function backToHome() {
+            document.getElementById('admin-login-section').classList.add('hidden');
+            document.getElementById('login-section').classList.remove('hidden');
+        }
+
+        function verifyAdmin() {
+            const pass = document.getElementById('admin-pass').value.trim();
+            if(pass === 'bdfb1234') { // এডমিন পাসওয়ার্ড
+                document.getElementById('admin-login-section').classList.add('hidden');
+                document.getElementById('admin-dashboard').classList.remove('hidden');
+                loadAdminResults();
+            } else {
+                alert('ভুল এডমিন পাসওয়ার্ড!');
+            }
+        }
+
+        async function addEligibleVoter() {
+            const voter_no = document.getElementById('new-voter-no').value.trim();
+            const unique_code = document.getElementById('new-voter-code').value.trim();
+            const name = document.getElementById('new-voter-name').value.trim();
+
+            if(!voter_no || !unique_code || !name) return alert('সব তথ্য পূরণ করুন');
+
+            const { error } = await supabase.from('eligible_voters').insert([{ voter_no, unique_code, name }]);
+            if(error) alert('ত্রুটি: ' + error.message);
+            else {
+                alert('বৈধ ভোটার সফলভাবে যুক্ত হয়েছে!');
+                document.getElementById('new-voter-no').value = '';
+                document.getElementById('new-voter-code').value = '';
+                document.getElementById('new-voter-name').value = '';
+            }
+        }
+
+        async function addCandidate() {
+            const name = document.getElementById('cand-name').value.trim();
+            const symbol = document.getElementById('cand-symbol').value.trim();
+            if(!name || !symbol) return alert('নাম ও প্রতীক দিন');
+
+            const { error } = await supabase.from('candidates').insert([{ name, symbol }]);
+            if(error) alert('ত্রুটি: ' + error.message);
+            else {
+                alert('প্রার্থী যুক্ত করা হয়েছে!');
+                loadAdminResults();
+            }
+        }
+
+        async function loadAdminResults() {
+            const { data: candidates } = await supabase.from('candidates').select('*');
+            const { data: votes } = await supabase.from('votes').select('*');
+            const container = document.getElementById('admin-results');
+            container.innerHTML = '';
+
+            if(!candidates) return;
+            candidates.forEach(c => {
+                const count = votes ? votes.filter(v => v.candidate_id === c.id).length : 0;
+                container.innerHTML += `
+                    <div class="flex justify-between bg-white p-2 rounded border">
+                        <span><b>${c.name}</b> (${c.symbol})</span>
+                        <span class="font-bold text-blue-600">${count} ভোট</span>
+                    </div>
+                `;
+            });
+        }
+
+        async function downloadVoterPDF() {
+            const { data: voters } = await supabase.from('eligible_voters').select('*');
+            if(!voters || voters.length === 0) return alert('কোনো ভোটার পাওয়া যায়নি।');
+
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+
+            doc.setFont("helvetica", "bold");
+            doc.text("Blood Donor Force of Bangladesh (BDFB)", 14, 20);
+            doc.setFont("helvetica", "normal");
+            doc.text("Official Eligible Voter List", 14, 28);
+
+            let y = 40;
+            doc.text("Voter No", 14, y);
+            doc.text("Name", 50, y);
+            doc.text("Unique Code", 140, y);
+            doc.line(14, y+2, 200, y+2);
+
+            y += 10;
+            voters.forEach(v => {
+                doc.text(v.voter_no, 14, y);
+                doc.text(v.name, 50, y);
+                doc.text(v.unique_code, 140, y);
+                y += 8;
+            });
+
+            doc.save("bdfb-voter-list.pdf");
+        }
+
+        function logout() {
+            currentVoter = null;
+            document.getElementById('voting-section').classList.add('hidden');
+            document.getElementById('admin-dashboard').classList.add('hidden');
+            document.getElementById('login-section').classList.remove('hidden');
+            document.getElementById('login-voter-no').value = '';
+            document.getElementById('login-code').value = '';
+            loadHomeResults();
+        }
     </script>
 </body>
 </html>
